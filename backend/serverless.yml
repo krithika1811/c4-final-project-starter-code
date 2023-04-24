@@ -14,7 +14,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs12.x
-  #lambdaHashingVersion: '20201221'
+  lambdaHashingVersion: '20201221'
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
@@ -62,7 +62,7 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-    iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-get-todo-role-${self:provider.stage}
+    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-get-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -93,7 +93,7 @@ functions:
           request:
             schemas:
               application/json: ${file(models/create-todo-model.json)}
-    iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-create-todo-role-${self:provider.stage}
+    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-create-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -115,7 +115,10 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-    iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-update-todo-role-${self:provider.stage}
+          request:
+            schema:
+              application/json: ${file(models/update-todo-request.json)}
+    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-update-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -137,7 +140,7 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-    iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-delete-todo-role-${self:provider.stage}
+    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-delete-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -159,7 +162,7 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
-    iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-generate-s3-upload-url-role-${self:provider.stage}
+    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-generate-s3-upload-url-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
