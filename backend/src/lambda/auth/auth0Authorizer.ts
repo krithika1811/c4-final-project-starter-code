@@ -6,7 +6,7 @@ import { createLogger } from '../../utils/logger'
 import Axios from 'axios'
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
-import { Logger } from 'aws-sdk/clients/greengrass'
+//import { Logger } from 'aws-sdk/clients/greengrass'
 
 const logger = createLogger('auth')
 
