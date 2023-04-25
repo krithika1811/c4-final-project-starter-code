@@ -1,25 +1,21 @@
-# TODO: Change the name of the org 
 org: krithika1811
 app: serverless-todo-app-1
-service: serverless-todo-app-1
-frameworkVersion: '2.72.3'
+# TODO: Change the name of the org 
+service:
+  name:  serverless-todo-app-1
 
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-plugin-tracing
-  - serverless-reqvalidator-plugin
-  - serverless-aws-documentation
 
 provider:
   name: aws
   runtime: nodejs12.x
   lambdaHashingVersion: '20201221'
-
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
-
-  tracing:
+  tracing: 
     lambda: true
     apiGateway: true
 
@@ -30,8 +26,8 @@ provider:
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    PROJECT_NAME: serverless-app
-    INDEX_NAME: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+    #PROJECT_NAME: serverless-app
+    #INDEX_NAME: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
 
   logs:
     # Enable API Gateway logs
@@ -51,6 +47,13 @@ functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
   # TODO: Configure this function - 
   # Provide iamRoleStatements property for performing Actions on DynamoDB
@@ -68,13 +71,14 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
+      # - Effect: Allow
+      #   Action:
+      #     - dynamodb:Query
+      #   Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
         Resource:
           - '*'
 
@@ -102,6 +106,7 @@ functions:
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
         Resource:
           - '*'
 
@@ -117,7 +122,7 @@ functions:
           authorizer: Auth
           request:
             schema:
-              application/json: ${file(models/update-todo-request.json)}
+              application/json: ${file(models/update-todo-model.json)}
     #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-update-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
@@ -127,6 +132,7 @@ functions:
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
         Resource:
           - '*'
 
@@ -149,6 +155,7 @@ functions:
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
         Resource:
           - '*'
 
@@ -166,16 +173,17 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - s3:*
+          - s3:PutObject
+          - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
       - Effect: Allow
         Action:
-          - dynamodb:Query
-          - dynamodb:PutItem
+          - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
         Resource:
           - '*'  
 
@@ -193,7 +201,7 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Methods: "'GET, POST, PUT, DELETE, OPTIONS'"
         ResponseType: DEFAULT_4XX
         RestApiId:
-          Ref: "ApiGatewayRestApi"
+          Ref: ApiGatewayRestApi
     
     # TODO: Create a DynamoDB table with local secondary index and a composite key
     TodosTable:
@@ -218,7 +226,7 @@ resources:
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: todoId
+              - AttributeName: dueDate
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
@@ -252,7 +260,7 @@ resources:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
-          Id: MyPolicy
+          Id: UdacityServerlessTodo
           Version: "2012-10-17"
           Statement:
             - Sid: PublicReadForGetBucketObjects
