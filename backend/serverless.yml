@@ -24,7 +24,7 @@ provider:
   environment:
     TODOS_TABLE: Serverless-todo-app-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: udacity-serverless-c4-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     #PROJECT_NAME: serverless-app
     #INDEX_NAME: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
@@ -226,7 +226,7 @@ resources:
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: dueDate
+              - AttributeName: todoId
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
