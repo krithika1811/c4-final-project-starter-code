@@ -1,4 +1,4 @@
-import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
+import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
 
 import { verify, decode } from 'jsonwebtoken'
@@ -13,11 +13,12 @@ const logger = createLogger('auth')
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
+
 const jwksUrl = 'https://dev-stvfasa83jllv4dd.us.auth0.com/.well-known/jwks.json'
 
 export const handler = async (
-  event: CustomAuthorizerEvent
-): Promise<CustomAuthorizerResult> => {
+  event: APIGatewayTokenAuthorizerEvent
+): Promise<APIGatewayAuthorizerResult> => {
   logger.info('Authorizing a user', event.authorizationToken)
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
@@ -65,13 +66,15 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
   const response = await Axios.get(jwksUrl)
   const keys = response.data.keys
+  logger.info("keys is : ", keys)
   const signingKeys = keys.find(key => key.kid === jwt.header.kid)
-  logger.info('signingKeys', signingKeys)
+  logger.info('signingKeys are: ', signingKeys)
   if (!signingKeys){
     throw new Error('JWKS endpoint does not contain any keys')
   }
   const pemData = signingKeys.x5c[0]
-  const cert = `---BEGIN CERTIFICATE---\n${pemData}\n---END CERTIFICATE---`
+  logger.info("pemData is: ", pemData)
+  const cert = `-----BEGIN CERTIFICATE-----\n${pemData}\n-----END CERTIFICATE-----`
   const verifiedToken = verify(token, cert, { algorithms: ['RS256'] }) as JwtPayload
   logger.info('verifiedToken', verifiedToken)
   return verifiedToken
@@ -87,6 +90,7 @@ function getToken(authHeader: string): string {
 
   const split = authHeader.split(' ')
   const token = split[1]
+
 
   return token
 }
