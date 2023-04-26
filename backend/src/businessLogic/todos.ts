@@ -6,7 +6,7 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import { createLogger } from '../utils/logger'
 import * as uuid from 'uuid'
 //import * as createError from 'http-errors'
-//import { TodoUpdate } from '../models/TodoUpdate';
+import { TodoUpdate } from '../models/TodoUpdate';
 
 // TODO: Implement businessLogic
 const logger = createLogger('TodoAccess')
@@ -41,11 +41,11 @@ return await todosAcess.createTodoItem(newItem)
 }
 
 //Update todo logic function
-export async function updateTodo(
-    userId: string,     
+export async function updateTodo(     
     todoId: string,
-    todoUpdate: UpdateTodoRequest
-    ): Promise<UpdateTodoRequest> {
+    todoUpdate: UpdateTodoRequest,
+    userId: string
+    ): Promise<TodoUpdate> {
     logger.info('Calling update todo function')
     return todosAcess.updateTodoItem(todoId, userId, todoUpdate)           
     }
